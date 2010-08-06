@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <string.h>
+#include <unistd.h>
+#include <getopt.h>
 
 void usage() {
-  printf("USAGE: cc256 (integer)\n\n");
+  printf("Usage: cc256 [-c columns] [-t foreground text]\n\n");
   printf("  \033[1mcc256\033[0m will output a table representing up to 256 colors\n");
   printf("  which might be supported by your terminal emulator.\n");
   printf("  If a number is provided as the first argument, that'll define\n");
@@ -16,41 +17,51 @@ void usage() {
 }
 
 int main(int argc, char *argv[]) {
-  char *end = "\033[0m";
-  int i;
-  long int square_size;
+  char *fg_char    = NULL;
+  char *end        = "\033[0m";
+  long int columns = 16;
 
-  if(argv[1]) {
-    int want_help;
-    char *p;
-    /* compare by 3 chars so --h will be valid
-     * --help provided for context
-     */
-    want_help = strncmp(argv[1], "--help", 3);
-    if(want_help == 0) {
-      usage();
-    }
+  int color_int, opt;
+  char *p;
 
-    square_size = strtol(argv[1], &p, 10);
-    if(square_size == 0) {
-      square_size = 16;
+  while((opt = getopt(argc, argv, "hc:t:")) != -1) {
+    switch(opt) {
+      case 'c':
+        /* hjälp.
+         * försökt loopa genom alla bytes i optarg för att kolla med isdigit()
+         * men allt är ju digits då den verkar konvertera a till 97 t.ex...
+         */
+        columns = strtol(optarg, &p, 10);
+        break;
+      case 't':
+        fg_char = optarg;
+        break;
+      case 'h':
+        usage();
+        break;
+      default:
+        fprintf(stderr, "Usage: %s [-c columns] [-t] text to print\n", "cc256");
+        exit(EXIT_FAILURE);
     }
   }
-  else {
-    square_size = 8;
-  }
 
-  for(i=0;i<255;++i) {
-    if(i % square_size == 0) {
+
+  for(color_int=0;color_int<255;++color_int) {
+    if(color_int % columns == 0) {
       end = "\033[0m\n";
     }
     else {
       end = "\033[0m";
     }
-    if(i == 0) {
+    if(color_int == 0) {
       continue;
     }
-    printf("\033[48;5;%d%s %03d %s", i, "m",i, end);
+    if(fg_char != NULL) {
+      printf("\033[1m\033[48;5;%d%s %s %s", color_int, "m",fg_char, end);
+    }
+    else {
+      printf("\033[48;5;%d%s %03d %s", color_int, "m", color_int, end);
+    }
   }
   printf("\n");
   return(0);
