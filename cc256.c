@@ -16,23 +16,34 @@ void usage() {
   exit(0);
 }
 
+int is_integer(const char str[]) {
+  int i;
+  for(i=0;str[i]!='\0';++i) {
+    if(isdigit(str[i]) == 0) {
+      return(0);
+    }
+  }
+  return(1);
+}
+
 int main(int argc, char *argv[]) {
   char *fg_char    = NULL;
   char *end        = "\033[0m";
-  long int columns = 16;
+  int columns = 16;
 
   int color_int, opt;
-  char *p;
 
   while((opt = getopt(argc, argv, "hc:t:")) != -1) {
     switch(opt) {
       case 'c':
-        /* hjälp.
-         * försökt loopa genom alla bytes i optarg för att kolla med isdigit()
-         * men allt är ju digits då den verkar konvertera a till 97 t.ex...
-         */
-        columns = strtol(optarg, &p, 10);
-        break;
+        columns = atoi(optarg);
+        if(columns == 0) {
+          usage();
+          exit(0);
+        }
+        else {
+          break;
+        }
       case 't':
         fg_char = optarg;
         break;
@@ -57,7 +68,7 @@ int main(int argc, char *argv[]) {
       continue;
     }
     if(fg_char != NULL) {
-      printf("\033[1m\033[48;5;%d%s %s %s", color_int, "m",fg_char, end);
+      printf("\033[48;5;%d%s %s %s", color_int, "m",fg_char, end);
     }
     else {
       printf("\033[48;5;%d%s %03d %s", color_int, "m", color_int, end);
