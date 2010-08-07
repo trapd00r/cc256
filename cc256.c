@@ -16,16 +16,6 @@ void usage() {
   exit(0);
 }
 
-int is_integer(const char str[]) {
-  int i;
-  for(i=0;str[i]!='\0';++i) {
-    if(isdigit(str[i]) == 0) {
-      return(0);
-    }
-  }
-  return(1);
-}
-
 int main(int argc, char *argv[]) {
   char *fg_char    = NULL;
   char *end        = "\033[0m";
@@ -42,6 +32,7 @@ int main(int argc, char *argv[]) {
           exit(0);
         }
         else {
+          /* dont let the args fall though */
           break;
         }
       case 't':
